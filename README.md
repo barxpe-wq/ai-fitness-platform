@@ -59,20 +59,23 @@ Platforma oferuje:
 ```mermaid
 flowchart LR
   subgraph Web
-    NextJS[Next.js Frontend]
+    NextJS["Next.js Frontend"]
   end
 
   subgraph API
-    ExpressAPI[Express API]
-    Prisma[Prisma ORM]
+    ExpressAPI["Express API"]
+    Prisma["Prisma ORM"]
   end
 
   subgraph ML
-    FastAPI[FastAPI ML Service]
-    Model[model.pkl]
+    FastAPI["FastAPI ML Service"]
+    Model["model.pkl"]
   end
 
-  NextJS -->|HTTP (Bearer JWT)| ExpressAPI
-  ExpressAPI -->|Prisma client| PostgreSQL[(PostgreSQL)]
-  ExpressAPI -->|HTTP| FastAPI
-  FastAPI -->|Uses model| Model
+  PostgreSQL[("PostgreSQL")]
+
+  NextJS -->|"HTTP + Bearer JWT"| ExpressAPI
+  ExpressAPI -->|"Prisma Client"| PostgreSQL
+  ExpressAPI -->|"HTTP"| FastAPI
+  FastAPI -->|"Uses model"| Model
+```
