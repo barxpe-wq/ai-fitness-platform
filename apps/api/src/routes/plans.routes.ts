@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../db";
-import { Role } from "@prisma/client";
+import { ROLES } from "../types/role";
 import { AppError, asyncHandler } from "../middleware/error";
 import { validate } from "../middleware/validate";
 import { verifyJWT } from "../middleware/auth";
@@ -10,7 +10,7 @@ import { assertClientAccess } from "../services/access.service";
 
 const router = Router();
 
-router.use(verifyJWT, requireRole(Role.TRAINER, Role.ADMIN));
+router.use(verifyJWT, requireRole(ROLES.TRAINER, ROLES.ADMIN));
 
 const clientIdParams = z.object({
   clientId: z.string().cuid()

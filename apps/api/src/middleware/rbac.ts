@@ -1,5 +1,5 @@
 import type { RequestHandler } from "express";
-import { Role } from "@prisma/client";
+import type { Role } from "../types/role";
 import { AppError } from "./error";
 
 export function requireRole(...roles: Role[]): RequestHandler {

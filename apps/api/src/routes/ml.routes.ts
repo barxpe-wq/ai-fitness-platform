@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { z } from "zod";
-import { Role } from "@prisma/client";
+import { ROLES } from "../types/role";
 import { verifyJWT } from "../middleware/auth";
 import { requireRole } from "../middleware/rbac";
 import { asyncHandler } from "../middleware/error";
@@ -9,7 +9,7 @@ import { mlHealth, predictWeight } from "../services/ml.service";
 
 const router = Router();
 
-router.use(verifyJWT, requireRole(Role.TRAINER, Role.ADMIN));
+router.use(verifyJWT, requireRole(ROLES.TRAINER, ROLES.ADMIN));
 
 const predictSchema = z.object({
   features: z.object({

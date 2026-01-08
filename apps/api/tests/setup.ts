@@ -5,7 +5,7 @@ import bcrypt from "bcryptjs";
 import { execa } from "execa";
 import { beforeAll, beforeEach, afterAll } from "vitest";
 import { prisma } from "../src/db";
-import { Role } from "@prisma/client";
+import { ROLES } from "../src/types/role";
 
 const apiRoot = new URL("..", import.meta.url).pathname;
 const globalForTests = globalThis as typeof globalThis & { __dbSetup?: boolean };
@@ -20,11 +20,11 @@ async function seedTrainer() {
   const passwordHash = await bcrypt.hash("Demo1234!", 10);
   await prisma.user.upsert({
     where: { email: "trainer@demo.com" },
-    update: { passwordHash, role: Role.TRAINER },
+    update: { passwordHash, role: ROLES.TRAINER },
     create: {
       email: "trainer@demo.com",
       passwordHash,
-      role: Role.TRAINER
+      role: ROLES.TRAINER
     }
   });
 }

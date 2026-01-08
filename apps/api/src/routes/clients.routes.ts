@@ -1,7 +1,8 @@
 import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../db";
-import { Role, Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
+import { ROLES } from "../types/role";
 import { AppError, asyncHandler } from "../middleware/error";
 import { validate } from "../middleware/validate";
 import { verifyJWT } from "../middleware/auth";
@@ -10,7 +11,7 @@ import { hashPassword } from "../utils/password";
 
 const router = Router();
 
-router.use(verifyJWT, requireRole(Role.TRAINER, Role.ADMIN));
+router.use(verifyJWT, requireRole(ROLES.TRAINER, ROLES.ADMIN));
 
 const clientIdParams = z.object({
   id: z.string().cuid()
@@ -58,7 +59,7 @@ router.get(
     const user = req.user!;
 
     const profiles = await prisma.clientProfile.findMany({
-      where: user.role === Role.TRAINER ? { trainerId: user.id } : undefined,
+      where: user.role === ROLES.TRAINER ? { trainerId: user.id } : undefined,
       include: {
         user: { select: { email: true } }
       }
@@ -76,11 +77,11 @@ router.post(
     const { email, tempPassword, firstName, lastName, trainerId } =
       req.validated?.body as z.infer<typeof createClientSchema>;
 
-    if (user.role === Role.ADMIN && !trainerId) {
+    if (user.role === ROLES.ADMIN && !trainerId) {
       throw new AppError(400, "VALIDATION_ERROR", "trainerId is required");
     }
 
-    if (user.role === Role.TRAINER && trainerId) {
+    if (user.role === ROLES.TRAINER && trainerId) {
       throw new AppError(
         400,
         "VALIDATION_ERROR",
@@ -97,7 +98,7 @@ router.post(
     }
 
     const resolvedTrainerId =
-      user.role === Role.TRAINER ? user.id : (trainerId as string);
+      user.role === ROLES.TRAINER ? user.id : (trainerId as string);
 
     const trainer = await prisma.user.findUnique({
       where: { id: resolvedTrainerId }
@@ -115,7 +116,7 @@ router.post(
           data: {
             email,
             passwordHash,
-            role: Role.CLIENT
+          role: ROLES.CLIENT
           }
         });
 
@@ -147,7 +148,7 @@ router.get(
     const { id } = req.validated?.params as z.infer<typeof clientIdParams>;
 
     const profile =
-      user.role === Role.TRAINER
+      user.role === ROLES.TRAINER
         ? await prisma.clientProfile.findFirst({
             where: { id, trainerId: user.id },
             include: { user: { select: { email: true } } }
@@ -174,12 +175,12 @@ router.patch(
     const { email, firstName, lastName } =
       req.validated?.body as z.infer<typeof updateClientSchema>;
 
-    if (user.role === Role.TRAINER && email) {
+    if (user.role === ROLES.TRAINER && email) {
       throw new AppError(400, "VALIDATION_ERROR", "Email update not allowed");
     }
 
     const profile =
-      user.role === Role.TRAINER
+      user.role === ROLES.TRAINER
         ? await prisma.clientProfile.findFirst({
             where: { id, trainerId: user.id },
             include: { user: true }
@@ -193,7 +194,7 @@ router.patch(
       throw new AppError(404, "NOT_FOUND", "Client not found");
     }
 
-    if (user.role === Role.ADMIN && email && email !== profile.user.email) {
+    if (user.role === ROLES.ADMIN && email && email !== profile.user.email) {
       const existingUser = await prisma.user.findUnique({
         where: { email }
       });
@@ -205,7 +206,7 @@ router.patch(
 
     const updated = await prisma.$transaction(
       async (tx: Prisma.TransactionClient) => {
-        if (user.role === Role.ADMIN && email && email !== profile.user.email) {
+        if (user.role === ROLES.ADMIN && email && email !== profile.user.email) {
           await tx.user.update({
             where: { id: profile.userId },
             data: { email }

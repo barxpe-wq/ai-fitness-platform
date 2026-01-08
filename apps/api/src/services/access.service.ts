@@ -1,4 +1,4 @@
-import { Role } from "@prisma/client";
+import { ROLES, type Role } from "../types/role";
 import { prisma } from "../db";
 import { AppError } from "../middleware/error";
 
@@ -14,7 +14,7 @@ export async function assertClientAccess(user: {
     throw new AppError(404, "NOT_FOUND", "Client not found");
   }
 
-  if (user.role === Role.TRAINER && clientProfile.trainerId !== user.id) {
+  if (user.role === ROLES.TRAINER && clientProfile.trainerId !== user.id) {
     throw new AppError(404, "NOT_FOUND", "Client not found");
   }
 
