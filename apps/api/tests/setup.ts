@@ -52,7 +52,7 @@ beforeAll(async () => {
   try {
     await execa("npx", ["prisma", "db", "execute", "--url", adminUrl, "--file", sqlFile], {
       cwd: apiRoot,
-      stdio: "inherit",
+      stdio: "pipe",
       env: process.env
     });
   } catch {

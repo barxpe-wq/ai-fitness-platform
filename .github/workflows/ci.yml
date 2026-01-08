@@ -14,6 +14,7 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
+      - run: npm run prisma:generate --workspace apps/api
       - run: npm run lint
       - run: npm run typecheck
 

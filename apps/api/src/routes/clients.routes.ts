@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../db";
-import { Role } from "@prisma/client";
+import { Role, Prisma } from "@prisma/client";
 import { AppError, asyncHandler } from "../middleware/error";
 import { validate } from "../middleware/validate";
 import { verifyJWT } from "../middleware/auth";
@@ -109,29 +109,31 @@ router.post(
 
     const passwordHash = await hashPassword(tempPassword);
 
-    const client = await prisma.$transaction(async (tx) => {
-      const createdUser = await tx.user.create({
-        data: {
-          email,
-          passwordHash,
-          role: Role.CLIENT
-        }
-      });
+    const client = await prisma.$transaction(
+      async (tx: Prisma.TransactionClient) => {
+        const createdUser = await tx.user.create({
+          data: {
+            email,
+            passwordHash,
+            role: Role.CLIENT
+          }
+        });
 
-      const profile = await tx.clientProfile.create({
-        data: {
-          userId: createdUser.id,
-          trainerId: resolvedTrainerId,
-          firstName,
-          lastName
-        },
-        include: {
-          user: { select: { email: true } }
-        }
-      });
+        const profile = await tx.clientProfile.create({
+          data: {
+            userId: createdUser.id,
+            trainerId: resolvedTrainerId,
+            firstName,
+            lastName
+          },
+          include: {
+            user: { select: { email: true } }
+          }
+        });
 
-      return profile;
-    });
+        return profile;
+      }
+    );
 
     res.status(201).json(formatClient(client));
   })
@@ -201,25 +203,27 @@ router.patch(
       }
     }
 
-    const updated = await prisma.$transaction(async (tx) => {
-      if (user.role === Role.ADMIN && email && email !== profile.user.email) {
-        await tx.user.update({
-          where: { id: profile.userId },
-          data: { email }
+    const updated = await prisma.$transaction(
+      async (tx: Prisma.TransactionClient) => {
+        if (user.role === Role.ADMIN && email && email !== profile.user.email) {
+          await tx.user.update({
+            where: { id: profile.userId },
+            data: { email }
+          });
+        }
+
+        const updatedProfile = await tx.clientProfile.update({
+          where: { id: profile.id },
+          data: {
+            firstName: firstName ?? profile.firstName,
+            lastName: lastName ?? profile.lastName
+          },
+          include: { user: { select: { email: true } } }
         });
+
+        return updatedProfile;
       }
-
-      const updatedProfile = await tx.clientProfile.update({
-        where: { id: profile.id },
-        data: {
-          firstName: firstName ?? profile.firstName,
-          lastName: lastName ?? profile.lastName
-        },
-        include: { user: { select: { email: true } } }
-      });
-
-      return updatedProfile;
-    });
+    );
 
     res.json(formatClient(updated));
   })

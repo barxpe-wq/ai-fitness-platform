@@ -1,12 +1,11 @@
 import { test, expect } from "@playwright/test";
+import type { APIRequestContext } from "@playwright/test";
 
 const demoEmail = "trainer@demo.com";
 const demoPassword = "Demo1234!";
 const apiBaseUrl = "http://localhost:4000";
 
-async function loginAndGetToken(request: {
-  post: (url: string, options: { data: unknown }) => Promise<any>;
-}) {
+async function loginAndGetToken(request: APIRequestContext) {
   const response = await request.post(`${apiBaseUrl}/auth/login`, {
     data: { email: demoEmail, password: demoPassword }
   });
@@ -15,7 +14,7 @@ async function loginAndGetToken(request: {
 }
 
 async function createClient(
-  request: { post: (url: string, options: { data: unknown; headers: Record<string, string> }) => Promise<any> },
+  request: APIRequestContext,
   token: string,
   suffix: string
 ) {
