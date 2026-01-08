@@ -1,5 +1,5 @@
 import bcrypt from "bcryptjs";
-import { PrismaClient, Role } from "@prisma/client";
+import { PrismaClient, Prisma } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -7,6 +7,9 @@ async function main() {
   const trainerEmail = "trainer@demo.com";
   const trainerPassword = "Demo1234!";
   const passwordHash = await bcrypt.hash(trainerPassword, 10);
+
+  const trainerRole: Prisma.UserCreateInput["role"] = "TRAINER";
+  const clientRole: Prisma.UserCreateInput["role"] = "CLIENT";
 
   const existingTrainer = await prisma.user.findUnique({
     where: { email: trainerEmail }
@@ -18,7 +21,7 @@ async function main() {
       data: {
         email: trainerEmail,
         passwordHash,
-        role: Role.TRAINER
+        role: trainerRole
       }
     }));
 
@@ -40,7 +43,7 @@ async function main() {
       data: {
         email: client.email,
         passwordHash,
-        role: Role.CLIENT
+        role: clientRole
       }
     });
 
