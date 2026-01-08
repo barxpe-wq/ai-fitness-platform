@@ -1,0 +1,55 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: ai_fitness_postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-aifitness}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  ml_api:
+    build:
+      context: ./ml_api
+    container_name: ai_fitness_ml_api
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./ml:/workspace/ml
+      - ./ml_api:/workspace/ml_api
+    working_dir: /workspace/ml_api
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.apps-api
+    container_name: ai_fitness_api
+    ports:
+      - "4000:4000"
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/aifitness?schema=public
+      JWT_SECRET: dev_super_secret_change_me
+      CORS_ORIGIN: http://localhost:3000
+      ML_API_BASE_URL: http://ml_api:8000
+    depends_on:
+      - postgres
+      - ml_api
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.apps-web
+    container_name: ai_fitness_web
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:4000
+    depends_on:
+      - api
+
+volumes:
+  postgres_data:

@@ -1,0 +1,26 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: ai_fitness_postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+  ml_api:
+    build:
+      context: ./ml_api
+    container_name: ai_fitness_ml_api
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./ml:/workspace/ml
+      - ./ml_api:/workspace/ml_api
+    working_dir: /workspace/ml_api
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+
+volumes:
+  postgres_data:

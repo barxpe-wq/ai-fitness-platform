@@ -1,0 +1,25 @@
+# Node
+node_modules
+dist
+.next
+out
+
+# Env
+.env
+.env.test
+
+# Prisma
+prisma/dev.db
+
+# Python / ML
+ml/.venv
+ml/artifacts/*.pkl
+ml/artifacts/*.png
+ml/artifacts/*.json
+
+# Playwright
+playwright-report
+test-results
+
+# OS
+.DS_Store
