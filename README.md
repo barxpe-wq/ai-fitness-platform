@@ -1,123 +1,78 @@
 # AI Fitness Platform
 
-## Overview
+**Full-stack AI-powered fitness & nutrition platform** — kompleksowe rozwiązanie łączące frontend, backend, bazę danych i machine learning.
 
-AI Fitness Platform to monorepo for trenerzy personalni: panel web, API z RBAC, oraz serwis ML do predykcji progresu. Projekt łączy web UI, backend, pipeline ML i inference przez FastAPI.
+---
 
-## Features
+## 🚀 Overview
 
-- JWT auth + RBAC (ADMIN, TRAINER, CLIENT)
-- CRUD klientów, planów i check-inów
-- Web UI z protected routes i MVP token storage
-- ML training pipeline + FastAPI inference
-- Docker Compose for Postgres and ML API
+Ta aplikacja to przykład profesjonalnego projektu portfolio, pokazującego moje umiejętności jako **Senior Full-Stack Developer & Machine Learning Engineer**.
 
-## Tech Stack
+Platforma oferuje:
 
-- Web: Next.js, TypeScript, Tailwind
-- API: Express, Prisma, PostgreSQL
-- ML: scikit-learn, FastAPI
-- Tooling: Docker, Vitest, Playwright
+- Kompletny **Web UI** z logowaniem, dashboardem trenera i CRUD klientów.
+- **REST API** z autoryzacją JWT i RBAC (role: ADMIN, TRAINER, CLIENT).
+- **PostgreSQL** jako trwała warstwa danych.
+- **Machine Learning**: model przewidujący wagę na podstawie check-inów.
+- Oddzielny serwis ML (FastAPI) do inferencji.
+- **Testy automatyczne** (unit, integration, E2E).
+- **Docker & CI Ready**.
 
-## Architecture
+---
+
+## 📌 Features
+
+### Backend (API)
+
+- Authentication (JWT + role based access control)
+- CRUD: clients, plans, check-ins
+- Validation (Zod)
+- Proxy do ML inference
+- Testy backend (Vitest + Supertest)
+
+### Frontend (Web)
+
+- Next.js (App Router)
+- Login, Dashboard
+- Clients list & details
+- Add / Edit / Delete plans & check-ins
+- Playwright E2E tests
+
+### Machine Learning
+
+- Synthetic data generation
+- Feature engineering
+- Model training with scikit-learn
+- Saved artifact (`model.pkl`)
+- FastAPI service for predictions
+
+### DevOps / Quality
+
+- Docker Compose (PostgreSQL + ML inference)
+- Lint & TypeScript type safety
+- CI (GitHub Actions config skeleton provided)
+
+---
+
+## 🧠 Architecture
 
 ```mermaid
 flowchart LR
-  web[apps/web] --> api[apps/api]
-  api --> postgres[(Postgres)]
-  api --> ml_api[ml_api]
-```
+  subgraph Web
+    NextJS[Next.js Frontend]
+  end
 
-More details: `docs/architecture.md`.
+  subgraph API
+    ExpressAPI[Express API]
+    Prisma[Prisma ORM]
+  end
 
-## Quickstart
+  subgraph ML
+    FastAPI[FastAPI ML Service]
+    Model[model.pkl]
+  end
 
-### Prerequisites
-
-- Node.js 20+
-- Docker (for Postgres + ML API)
-
-### Run services
-
-```bash
-docker compose up -d postgres ml_api
-```
-
-### Install deps
-
-```bash
-npm install
-```
-
-### Migrate + seed
-
-```bash
-npm run prisma:migrate --workspace apps/api
-npm run prisma:seed --workspace apps/api
-```
-
-### Start dev
-
-```bash
-npm run dev
-```
-
-- Web: http://localhost:3000
-- API: http://localhost:4000
-- ML API: http://localhost:8000
-
-## Demo credentials
-
-- trainer@demo.com / Demo1234!
-
-## API summary
-
-See `docs/api.md` for full list. Core endpoints:
-
-- `POST /auth/login`
-- `GET /auth/me`
-- `GET /clients`
-- `POST /clients`
-- `GET /clients/:id/plans`
-- `GET /clients/:id/checkins`
-- `GET /ml/health`
-- `POST /ml/predict-weight`
-
-## ML
-
-Train a model (Etap 7):
-
-```bash
-cd ml
-python -m src.train
-```
-
-## Production Docker (optional)
-
-```bash
-docker compose -f docker-compose.prod.yml up -d
-```
-
-Services:
-
-- Web: http://localhost:3000
-- API: http://localhost:4000
-- ML API: http://localhost:8000
-
-## Troubleshooting
-
-- CORS: ensure `CORS_ORIGIN=http://localhost:3000` in `apps/api/.env`.
-- Ports in use: adjust `PORT` (API) or `NEXT_PUBLIC_API_BASE_URL` (web).
-- ML API errors: verify `ml/artifacts/model.pkl` exists.
-
-## Roadmap
-
-- Etap 10: programy treningowe + raporty
-- Etap 11: diet coaching + alerts
-- Etap 12: personalized ML insights
-
-## Docs
-
-- `docs/architecture.md`
-- `docs/api.md`
-- `docs/screenshots.md`
+  NextJS -->|HTTP (Bearer JWT)| ExpressAPI
+  ExpressAPI -->|Prisma client| PostgreSQL[(PostgreSQL)]
+  ExpressAPI -->|HTTP| FastAPI
+  FastAPI -->|Uses model| Model
